@@ -1,23 +1,34 @@
 const localtunnel = require('localtunnel');
 const http = require('http');
 
-// Адрес вашего бота на RubyHost
 const TARGET_URL = "http://de6.rubyhost.ru:28980";
-
-// Получаем порт от Render или используем 8080 по умолчанию
 const PORT = process.env.PORT || 8080;
 
-// --- 1. Создаём простой HTTP-сервер для Render ---
+// HTTP-сервер для Render
 const server = http.createServer((req, res) => {
-    res.writeHead(200, { 'Content-Type': 'text/plain' });
-    res.end('Туннель активен!\n');
+    // Проксируем запросы к боту
+    const options = {
+        hostname: 'de6.rubyhost.ru',
+        port: 28980,
+        path: req.url,
+        method: req.method,
+        headers: req.headers
+    };
+
+    const proxy = http.request(options, (proxyRes) => {
+        res.writeHead(proxyRes.statusCode, proxyRes.headers);
+        proxyRes.pipe(res);
+    });
+
+    req.pipe(proxy);
 });
 
 server.listen(PORT, '0.0.0.0', () => {
-    console.log(`✅ HTTP-сервер запущен на порту ${PORT}`);
+    console.log(`✅ Прокси-сервер запущен на порту ${PORT}`);
+    console.log(`🎯 Цель: ${TARGET_URL}`);
 });
 
-// --- 2. Запускаем туннель ---
+// Туннель для Webhook
 (async () => {
     try {
         const tunnel = await localtunnel({
@@ -26,21 +37,16 @@ server.listen(PORT, '0.0.0.0', () => {
         });
 
         console.log(`✅ Туннель активен: ${tunnel.url}`);
-        console.log(`🎯 Цель: ${TARGET_URL}`);
-        console.log(`📡 API: ${tunnel.url}/api/avatar`);
-        console.log(`📨 Broadcast: ${tunnel.url}/api/broadcast`);
+        console.log(`📡 Webhook: ${tunnel.url}/webhook`);
+        console.log(`📡 API: ${tunnel.url}/api/ping`);
 
         tunnel.on('close', () => {
             console.log('❌ Туннель закрыт');
             process.exit(0);
         });
 
-        tunnel.on('error', (err) => {
-            console.error('❌ Ошибка туннеля:', err);
-        });
-
     } catch (error) {
-        console.error('❌ Ошибка запуска туннеля:', error);
+        console.error('❌ Ошибка:', error);
         process.exit(1);
     }
 })();
