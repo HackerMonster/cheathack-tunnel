@@ -13,7 +13,6 @@ const server = http.createServer((req, res) => {
     res.end('Туннель активен!\n');
 });
 
-// Запускаем сервер на порту, который дал Render
 server.listen(PORT, '0.0.0.0', () => {
     console.log(`✅ HTTP-сервер запущен на порту ${PORT}`);
 });
@@ -29,7 +28,7 @@ server.listen(PORT, '0.0.0.0', () => {
         console.log(`✅ Туннель активен: ${tunnel.url}`);
         console.log(`🎯 Цель: ${TARGET_URL}`);
         console.log(`📡 API: ${tunnel.url}/api/avatar`);
-        console.log(`🔗 Webhook: ${tunnel.url}/webhook`);
+        console.log(`📨 Broadcast: ${tunnel.url}/api/broadcast`);
 
         tunnel.on('close', () => {
             console.log('❌ Туннель закрыт');
