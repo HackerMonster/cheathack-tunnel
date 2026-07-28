@@ -1,0 +1,11 @@
+{
+  "name": "cheathack-tunnel",
+  "version": "1.0.0",
+  "description": "Туннель для бота @CheatHack_rbot",
+  "dependencies": {
+    "localtunnel": "^2.0.2"
+  },
+  "scripts": {
+    "start": "node tunnel.js"
+  }
+}
