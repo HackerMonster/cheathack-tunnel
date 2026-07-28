@@ -4,17 +4,28 @@ const localtunnel = require('localtunnel');
 const TARGET_URL = "http://de6.rubyhost.ru:28980";
 
 (async () => {
-  const tunnel = await localtunnel({
-    port: 28980,
-    subdomain: "cheathack-bot"
-  });
+  try {
+    const tunnel = await localtunnel({
+      port: 28980,
+      subdomain: "cheathack-bot"
+    });
 
-  console.log(`✅ Туннель активен: ${tunnel.url}`);
-  console.log(`🎯 Цель: ${TARGET_URL}`);
-  console.log(`📡 API: ${tunnel.url}/api/avatar`);
-  console.log(`🔗 Webhook: ${tunnel.url}/webhook`);
+    console.log(`✅ Туннель активен: ${tunnel.url}`);
+    console.log(`🎯 Цель: ${TARGET_URL}`);
+    console.log(`📡 API: ${tunnel.url}/api/avatar`);
+    console.log(`🔗 Webhook: ${tunnel.url}/webhook`);
 
-  tunnel.on('close', () => {
-    console.log('❌ Туннель закрыт');
-  });
+    tunnel.on('close', () => {
+      console.log('❌ Туннель закрыт');
+      process.exit(0);
+    });
+
+    tunnel.on('error', (err) => {
+      console.error('❌ Ошибка туннеля:', err);
+    });
+
+  } catch (error) {
+    console.error('❌ Ошибка запуска туннеля:', error);
+    process.exit(1);
+  }
 })();
