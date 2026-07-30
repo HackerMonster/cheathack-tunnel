@@ -1,15 +1,20 @@
-const localtunnel = require('localtunnel');
 const http = require('http');
+const url = require('url');
 
+// ===== АДРЕС ВАШЕГО БОТА НА RUBYHOST =====
 const TARGET_URL = "http://de6.rubyhost.ru:28980";
+const targetParsed = url.parse(TARGET_URL);
+
+// ===== ПОЛУЧАЕМ ПОРТ ОТ RENDER =====
 const PORT = process.env.PORT || 8080;
 
-// HTTP-сервер для Render
+// ===== СОЗДАЁМ HTTP-СЕРВЕР (ПРОКСИ) =====
 const server = http.createServer((req, res) => {
-    // Проксируем запросы к боту
+    console.log(`📨 Запрос: ${req.method} ${req.url}`);
+
     const options = {
-        hostname: 'de6.rubyhost.ru',
-        port: 28980,
+        hostname: targetParsed.hostname,
+        port: targetParsed.port || 80,
         path: req.url,
         method: req.method,
         headers: req.headers
@@ -21,32 +26,22 @@ const server = http.createServer((req, res) => {
     });
 
     req.pipe(proxy);
+
+    proxy.on('error', (err) => {
+        console.error('❌ Ошибка прокси:', err.message);
+        res.writeHead(502, { 'Content-Type': 'text/plain' });
+        res.end(`Bad Gateway: ${err.message}`);
+    });
 });
 
+// ===== ЗАПУСКАЕМ СЕРВЕР =====
 server.listen(PORT, '0.0.0.0', () => {
     console.log(`✅ Прокси-сервер запущен на порту ${PORT}`);
     console.log(`🎯 Цель: ${TARGET_URL}`);
 });
 
-// Туннель для Webhook
-(async () => {
-    try {
-        const tunnel = await localtunnel({
-            port: 28980,
-            subdomain: "cheathack-bot"
-        });
-
-        console.log(`✅ Туннель активен: ${tunnel.url}`);
-        console.log(`📡 Webhook: ${tunnel.url}/webhook`);
-        console.log(`📡 API: ${tunnel.url}/api/ping`);
-
-        tunnel.on('close', () => {
-            console.log('❌ Туннель закрыт');
-            process.exit(0);
-        });
-
-    } catch (error) {
-        console.error('❌ Ошибка:', error);
-        process.exit(1);
-    }
-})();
+// ===== ОБРАБОТКА ЗАВЕРШЕНИЯ =====
+process.on('SIGINT', () => {
+    console.log('⏹️ Сервер остановлен');
+    process.exit(0);
+});
