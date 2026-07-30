@@ -1,15 +1,8 @@
 {
   "name": "cheathack-tunnel",
   "version": "1.0.0",
-  "description": "Туннель для бота @CheatHack_rbot",
   "main": "tunnel.js",
   "scripts": {
     "start": "node tunnel.js"
-  },
-  "dependencies": {
-    "localtunnel": "^2.0.2"
-  },
-  "engines": {
-    "node": ">=16.0.0"
   }
 }
